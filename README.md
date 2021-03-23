@@ -59,7 +59,7 @@ The main function sets up the server after loading in templates for pages to be 
 
 We're using a template as it makes it easier to show what you should do with assets that aren't the actual application.
 
-# Building the Application
+# Building the Application for AMD64 (x86)
 
 We have created several targets in the `Makefile`, that can be helpful (just update the registry). To build it:
 
@@ -72,6 +72,10 @@ And then, we need to push it to the Docker registry:
 ```
 docker push quay.io/synpse/hello-synpse-go:latest
 ```
+
+# Building the Application for ARM (aarch64)
+
+TODO
 
 # Install synpse CLI
 
