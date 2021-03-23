@@ -103,6 +103,10 @@ spec:
         - 8090:8090
 ```
 
+Save the contents as a `hello.yaml` file and create the application:
+
 ```
 synpse application create -f hello.yaml
-```# hello-synpse-go
+```
+
+Once the application is deployed, you can open it in the browser by calling your device IP and port 8090 (if you are running the agent on localhost, then the URL will be http://localhost:8090)
