@@ -29,7 +29,7 @@ func main() {
 
 	r.GET("/", handleIndex)
 	r.GET("/:name", handleIndex)
-	r.Run(":8090")
+	r.Run(":8080")
 }
 
 func handleIndex(c *gin.Context) {
@@ -108,7 +108,7 @@ spec:
     - name: hello
       image: quay.io/synpse/hello-synpse-go:latest # <- our container image
       ports:
-        - 8090:8090
+        - 8060:8080
 ```
 
 Save the contents as a `hello.yaml` file and create the application:
@@ -117,4 +117,4 @@ Save the contents as a `hello.yaml` file and create the application:
 synpse application create -f hello.yaml
 ```
 
-Once the application is deployed, you can open it in the browser by calling your device IP and port 8090 (if you are running the agent on localhost, then the URL will be http://localhost:8090)
+Once the application is deployed, you can open it in the browser by calling your device IP and port 8080 (if you are running the agent on localhost, then the URL will be http://localhost:8080)

@@ -8,4 +8,4 @@ spec:
     - name: hello
       image: quay.io/synpse/hello-synpse-go:amd64 # <- our container image
       ports:
-        - 8090:8090
+        - 8080:8080
