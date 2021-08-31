@@ -64,18 +64,22 @@ We're using a template as it makes it easier to show what you should do with ass
 We have created several targets in the `Makefile`, that can be helpful (just update the registry). To build it:
 
 ```
-docker build --tag quay.io/synpse/hello-synpse-go -f Dockerfile .
+make build-all
 ```
 
 And then, we need to push it to the Docker registry:
 
 ```
-docker push quay.io/synpse/hello-synpse-go:latest
+make push-all
 ```
 
-# Building the Application for ARM (aarch64)
+Images will be available as:
 
-TODO
+```
+quay.io/synpse/hello-synpse-go:arm64
+quay.io/synpse/hello-synpse-go:arm32
+quay.io/synpse/hello-synpse-go:amd64
+```
 
 # Install synpse CLI
 
