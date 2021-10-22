@@ -1,10 +1,9 @@
-FROM golang:1.16
-COPY . /
-WORKDIR /
+FROM --platform=${BUILDPLATFORM} quay.io/synpse/alpine:3.9
+RUN apk --update add git openssh tar gzip ca-certificates \
+  bash curl
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
-RUN go mod download && CGO_ENABLED=0 go build -o app 
-
-FROM alpine:latest
-COPY --from=0 /templates /templates
-COPY --from=0 /app /app
+COPY ./release/${BUILDPLATFORM}/app /
+COPY ./templates /templates
 ENTRYPOINT ["/app"]
