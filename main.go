@@ -4,9 +4,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -18,33 +15,30 @@ func main() {
 }
 
 func run() error {
-	certFile, certSet := os.LookupEnv("TLS_CRT")
-	keyFile, keySet := os.LookupEnv("TLS_KEY")
-
+	// override port if provided
 	port := ":8080"
 	if val, ok := os.LookupEnv("PORT"); ok {
 		port = val
 	}
 
-	r := gin.Default()
+	// create filesystem router
+	fs := http.FileServer(http.Dir("./ui"))
+	http.Handle("/", fs)
 
-	r.LoadHTMLGlob("./templates/*")
-
-	r.GET("/", handleIndex)
-	r.GET("/:name", handleIndex)
-	if !certSet || !keySet {
-		log.Print("TLS_CRT and TLS_KEY  not set, running in insecure mode")
-		r.Run(port)
+	// read certificate variables and if set - run in https mode.
+	// else - run in plain http mode.
+	certFile, certSet := os.LookupEnv("TLS_CRT")
+	keyFile, keySet := os.LookupEnv("TLS_KEY")
+	if certSet || keySet {
+		log.Println("Listening TLS on " + port)
+		http.ListenAndServeTLS(port, certFile, keyFile, nil)
 	} else {
-		r.RunTLS(port, certFile, keyFile)
+		log.Println("Listening on " + port)
+		err := http.ListenAndServe(port, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-	return nil
-}
 
-func handleIndex(c *gin.Context) {
-	name := c.Param("name")
-	if name != "" {
-		name = strings.TrimPrefix(c.Param("name"), "/")
-	}
-	c.HTML(http.StatusOK, "hellosynpse.html", gin.H{"Name": name})
+	return nil
 }

@@ -6,6 +6,6 @@ scheduling:
 spec:
   containers:
     - name: hello
-      image: quay.io/synpse/hello-synpse-go:amd64 # <- our container image
+      image: quay.io/synpse/hello-synpse-go # <- our container image
       ports:
         - 8080:8080

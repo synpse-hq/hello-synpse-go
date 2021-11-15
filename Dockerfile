@@ -1,9 +1,19 @@
-FROM --platform=${BUILDPLATFORM} quay.io/synpse/alpine:3.9
-RUN apk --update add git openssh tar gzip ca-certificates \
-  bash curl
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
+FROM golang:buster AS go-build-env
 
-COPY ./release/${BUILDPLATFORM}/app /
-COPY ./templates /templates
-ENTRYPOINT ["/app"]
+WORKDIR /app
+
+COPY . .
+
+ARG TARGETARCH
+RUN CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /app/app
+
+FROM quay.io/synpse/alpine:3.9
+
+RUN apk --update add ca-certificates
+
+COPY --from=go-build-env /app/app /bin/
+COPY ./ui /ui
+
+RUN chmod +x /bin/app
+
+ENTRYPOINT ["/bin/app"]

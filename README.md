@@ -11,66 +11,48 @@ The main difference here will be building and publishing Docker images that can 
 
 # The Hello Synpse Application
 
-The hello-synpse application is, as you'd expect for an example, small. It's a Go application that uses the gin web framework. Here's all the code form main.go:
+The hello-synpse application is, as you'd expect for an example, small. It's a Go application that uses the native http libraries. Here's all the code form main.go:
 
 ```golang
-package main
-
-import (
-	"net/http"
-	"strings"
-
-	"github.com/gin-gonic/gin"
-)
-
-func main() {
-	r := gin.Default()
-	r.LoadHTMLGlob("./templates/*")
-
-	r.GET("/", handleIndex)
-	r.GET("/:name", handleIndex)
-	r.Run(":8080")
-}
-
-func handleIndex(c *gin.Context) {
-	name := c.Param("name")
-	if name != "" {
-		name = strings.TrimPrefix(c.Param("name"), "/")
+	// override port if provided
+	port := ":8080"
+	if val, ok := os.LookupEnv("PORT"); ok {
+		port = val
 	}
-	c.HTML(http.StatusOK, "hellosynpse.html", gin.H{"Name": name})
-}
+
+	// create filesystem router
+	fs := http.FileServer(http.Dir("./ui"))
+	http.Handle("/", fs)
+
+	// read certificate variables and if set - run in https mode.
+	// else - run in plain http mode.
+	certFile, certSet := os.LookupEnv("TLS_CRT")
+	keyFile, keySet := os.LookupEnv("TLS_KEY")
+	if certSet || keySet {
+		log.Println("Listening TLS on " + port)
+		http.ListenAndServeTLS(port, certFile, keyFile, nil)
+	} else {
+		log.Println("Listening on " + port)
+		err := http.ListenAndServe(port, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+```
+# Building the Application for AMD64 (x86) and ARM64 (ARM)
+
+We use docker `buildx` command to build the application image for multiple architectures. 
+More on this [here](https://synpse.net/blog/images/multiarch-images/).
+
+We have created build target in the `Makefile`, that can be helpful (just update the registry). To build it:
 
 ```
-
-The main function sets up the server after loading in templates for pages to be output. Those templates live in ./templates/. When a request comes in, the handleIndex function looks for a name and feeds that name to a template. The template itself, hellosynpse.html, is very simple too:
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head> </head>
-  <body>
-    <h1>Hello from Synpse</h1>
-    {{ if .Name }}
-    <h2>and hello to {{.Name}}</h2>
-    {{end}}
-  </body>
-</html>
-```
-
-We're using a template as it makes it easier to show what you should do with assets that aren't the actual application.
-
-# Building the Application for AMD64 (x86)
-
-We have created several targets in the `Makefile`, that can be helpful (just update the registry). To build it:
-
-```
-make app image
+make image
 ```
 
 Images will be available as:
-
 ```
-quay.io/synpse/hello-synpse-go:latest
+quay.io/synpse/hello-synpse-go
 ```
 
 # Install synpse CLI
@@ -98,9 +80,9 @@ scheduling:
 spec:
   containers:
     - name: hello
-      image: quay.io/synpse/hello-synpse-go:latest # <- our container image
+      image: quay.io/synpse/hello-synpse-go # <- our container image
       ports:
-        - 8060:8080
+        - 8080:8080
 ```
 
 Save the contents as a `hello.yaml` file and create the application:
